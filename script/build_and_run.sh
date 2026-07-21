@@ -3,53 +3,31 @@ set -euo pipefail
 
 MODE="${1:-run}"
 APP_NAME="TranslateBar"
-BUNDLE_ID="com.translatebar.app"
-APP_VERSION="0.1.0"
-BUILD_VERSION="1"
-MIN_SYSTEM_VERSION="14.0"
+BUNDLE_ID="com.iwbinb.TranslateBar"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT="$ROOT_DIR/TranslateBar.xcodeproj"
+DERIVED_DATA="$ROOT_DIR/.build/xcode"
 DIST_DIR="$ROOT_DIR/dist"
 APP_BUNDLE="$DIST_DIR/$APP_NAME.app"
-APP_CONTENTS="$APP_BUNDLE/Contents"
-APP_MACOS="$APP_CONTENTS/MacOS"
-APP_RESOURCES="$APP_CONTENTS/Resources"
-APP_BINARY="$APP_MACOS/$APP_NAME"
-INFO_PLIST="$APP_CONTENTS/Info.plist"
+APP_BINARY="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
-swift build --package-path "$ROOT_DIR"
-BUILD_BINARY="$(swift build --package-path "$ROOT_DIR" --show-bin-path)/$APP_NAME"
+xcodebuild \
+  -quiet \
+  -project "$PROJECT" \
+  -scheme "$APP_NAME" \
+  -configuration Debug \
+  -derivedDataPath "$DERIVED_DATA" \
+  CODE_SIGNING_ALLOWED=NO \
+  build
 
 rm -rf "$APP_BUNDLE"
-mkdir -p "$APP_MACOS" "$APP_RESOURCES"
-cp "$BUILD_BINARY" "$APP_BINARY"
-cp "$ROOT_DIR/Assets/TranslateBarAppIcon.icns" "$APP_RESOURCES/AppIcon.icns"
-chmod +x "$APP_BINARY"
-
-cat >"$INFO_PLIST" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<plist version="1.0"><dict>
-  <key>CFBundleExecutable</key><string>$APP_NAME</string>
-  <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
-  <key>CFBundleName</key><string>$APP_NAME</string>
-  <key>CFBundleDisplayName</key><string>$APP_NAME</string>
-  <key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
-  <key>CFBundleVersion</key><string>$BUILD_VERSION</string>
-  <key>CFBundleIconFile</key><string>AppIcon.icns</string>
-  <key>CFBundlePackageType</key><string>APPL</string>
-  <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
-  <key>LSUIElement</key><true/>
-  <key>NSMicrophoneUsageDescription</key><string>TranslateBar uses the microphone to dictate text for translation.</string>
-  <key>NSSpeechRecognitionUsageDescription</key><string>TranslateBar uses speech recognition to turn dictated words into text.</string>
-  <key>NSPrincipalClass</key><string>NSApplication</string>
-  <key>NSServices</key><array><dict>
-    <key>NSMenuItem</key><dict><key>default</key><string>Translate selection with TranslateBar</string></dict>
-    <key>NSMessage</key><string>performTranslateService</string>
-    <key>NSPortName</key><string>TranslateBarService</string>
-    <key>NSSendTypes</key><array><string>NSStringPboardType</string></array>
-  </dict></array>
-</dict></plist>
-PLIST
+mkdir -p "$DIST_DIR"
+ditto "$DERIVED_DATA/Build/Products/Debug/$APP_NAME.app" "$APP_BUNDLE"
+codesign --force --deep --sign - \
+  --entitlements "$ROOT_DIR/AppStore/TranslateBar.entitlements" \
+  --timestamp=none \
+  "$APP_BUNDLE"
 
 open_app() { /usr/bin/open -n "$APP_BUNDLE"; }
 case "$MODE" in

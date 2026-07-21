@@ -16,23 +16,28 @@ final class SpeechInputManager: NSObject, ObservableObject {
     func start() {
         errorMessage = nil
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
-            guard status == .authorized else {
-                Task { @MainActor [weak self] in
-                    self?.errorMessage = "Speech recognition permission is required."
-                }
-                return
-            }
-            AVCaptureDevice.requestAccess(for: .audio) { granted in
-                Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    guard granted else {
-                        self.errorMessage = "Microphone permission is required."
-                        return
-                    }
-                    self.beginRecognition()
-                }
-            }
+            guard let self else { return }
+            Task { @MainActor in self.handleSpeechAuthorization(status) }
         }
+    }
+
+    private func handleSpeechAuthorization(_ status: SFSpeechRecognizerAuthorizationStatus) {
+        guard status == .authorized else {
+            errorMessage = "Speech recognition permission is required."
+            return
+        }
+        AVCaptureDevice.requestAccess(for: .audio) { [weak self] granted in
+            guard let self else { return }
+            Task { @MainActor in self.handleMicrophoneAuthorization(granted) }
+        }
+    }
+
+    private func handleMicrophoneAuthorization(_ granted: Bool) {
+        guard granted else {
+            errorMessage = "Microphone permission is required."
+            return
+        }
+        beginRecognition()
     }
 
     func stop() {
@@ -56,6 +61,11 @@ final class SpeechInputManager: NSObject, ObservableObject {
         }
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
+        guard recognizer.supportsOnDeviceRecognition else {
+            errorMessage = "On-device speech recognition is unavailable for the current language."
+            return
+        }
+        request.requiresOnDeviceRecognition = true
         self.request = request
         let inputNode = audioEngine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)

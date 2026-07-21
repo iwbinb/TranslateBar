@@ -4,7 +4,6 @@ struct PreferencesView: View {
     @AppStorage(PreferencesKey.launchAtLogin) private var launchAtLogin = false
     @AppStorage(PreferencesKey.showInDock) private var showInDock = false
     @AppStorage(PreferencesKey.translateClipboard) private var translateClipboard = false
-    @AppStorage(PreferencesKey.useChinaEndpoint) private var useChinaEndpoint = false
     @State private var shortcut = PreferencesView.storedShortcut
     @State private var settingsIssue: SettingsIssue?
     @State private var isRevertingLoginItem = false
@@ -33,8 +32,8 @@ struct PreferencesView: View {
                 Toggle("Translate copied text automatically", isOn: $translateClipboard)
             }
             Section("Translation") {
-                Toggle("Use the China endpoint", isOn: $useChinaEndpoint)
-                Text("TranslateBar sends text to a remote translation service. An internet connection is required.")
+                Label("On-device translation", systemImage: "checkmark.shield")
+                Text("Translation is handled by macOS. Text is not sent to TranslateBar or third-party translation services. macOS may download language packs when needed.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

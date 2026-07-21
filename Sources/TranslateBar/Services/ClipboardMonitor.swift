@@ -1,5 +1,6 @@
 import AppKit
 
+@MainActor
 final class ClipboardMonitor {
     var onText: ((String) -> Void)?
     private let pasteboard: NSPasteboard
@@ -16,7 +17,7 @@ final class ClipboardMonitor {
     func start() {
         stop()
         let timer = Timer(timeInterval: pollingInterval, repeats: true) { [weak self] _ in
-            self?.poll()
+            Task { @MainActor in self?.poll() }
         }
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
@@ -38,6 +39,4 @@ final class ClipboardMonitor {
               !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         onText?(text)
     }
-
-    deinit { stop() }
 }

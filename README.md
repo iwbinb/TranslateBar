@@ -5,6 +5,7 @@ TranslateBar is an independent menu bar translation utility for macOS.
 ## Features
 
 - Compact menu bar interface
+- On-device translation powered by macOS
 - Automatic source language detection
 - Global keyboard shortcut
 - Optional clipboard translation
@@ -13,8 +14,8 @@ TranslateBar is an independent menu bar translation utility for macOS.
 
 ## Requirements
 
-- macOS 14 or later
-- Xcode Command Line Tools
+- macOS 15 or later
+- Xcode 16 or later
 
 ## Build and run
 
@@ -22,7 +23,9 @@ TranslateBar is an independent menu bar translation utility for macOS.
 ./script/build_and_run.sh
 ```
 
-The application bundle will be created at `dist/TranslateBar.app`.
+The script builds the Xcode app target and creates `dist/TranslateBar.app`.
+
+You can also open `TranslateBar.xcodeproj` in Xcode to run, archive, and distribute the app.
 
 ## Test
 
@@ -32,7 +35,7 @@ The application bundle will be created at `dist/TranslateBar.app`.
 
 ## Privacy
 
-Text submitted for translation is sent to a remote translation service. Clipboard text is processed only when automatic clipboard translation is enabled. Dictation requires microphone and speech recognition permissions. TranslateBar does not include analytics or advertising.
+Translation is handled by macOS on the device. Clipboard text is processed only when automatic clipboard translation is enabled. Dictation requires microphone and speech recognition permissions and is configured for on-device recognition. TranslateBar does not include analytics, advertising, or third-party translation services. See [PRIVACY.md](PRIVACY.md).
 
 ## License
 

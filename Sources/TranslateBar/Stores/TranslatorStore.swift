@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+@preconcurrency import Translation
 
 @MainActor
 final class TranslatorStore: ObservableObject {
@@ -9,21 +10,20 @@ final class TranslatorStore: ObservableObject {
     @Published var targetLanguage = Language(code: "en", name: "English")
     @Published var isTranslating = false
     @Published var errorMessage: String?
+    @Published private(set) var translationConfiguration: TranslationSession.Configuration?
 
-    private let service: any TranslationServing
-    private let defaults: UserDefaults
+    private let service: (any TranslationServing)?
     private let debounceDuration: Duration
     private var pendingTask: Task<Void, Never>?
     private var translationTask: Task<Void, Never>?
     private var activeRequestID: UInt64 = 0
+    private var activeRequest: TranslationRequest?
 
     init(
-        service: any TranslationServing = TranslationService(),
-        defaults: UserDefaults = .standard,
+        service: (any TranslationServing)? = nil,
         debounceDuration: Duration = .milliseconds(420)
     ) {
         self.service = service
-        self.defaults = defaults
         self.debounceDuration = debounceDuration
     }
 
@@ -32,6 +32,7 @@ final class TranslatorStore: ObservableObject {
         pendingTask = nil
         cancelActiveTranslation()
         guard !sourceText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            translationConfiguration = nil
             resultText = ""
             errorMessage = nil
             return
@@ -55,17 +56,25 @@ final class TranslatorStore: ObservableObject {
         cancelActiveTranslation()
         let text = sourceText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else {
+            translationConfiguration = nil
             resultText = ""
             errorMessage = nil
             return
         }
         let source = sourceLanguage
         let target = targetLanguage
-        let useChinaEndpoint = defaults.bool(forKey: PreferencesKey.useChinaEndpoint)
         activeRequestID &+= 1
         let requestID = activeRequestID
+        let request = TranslationRequest(id: requestID, text: text, source: source, target: target)
+        activeRequest = request
         isTranslating = true
         errorMessage = nil
+
+        guard let service else {
+            activateAppleTranslation(for: request)
+            return
+        }
+
         translationTask = Task { [weak self] in
             guard let self else { return }
             defer {
@@ -75,19 +84,25 @@ final class TranslatorStore: ObservableObject {
                 }
             }
             do {
-                let value = try await self.service.translate(text: text, source: source, target: target, useChinaEndpoint: useChinaEndpoint)
-                guard !Task.isCancelled,
-                      self.activeRequestID == requestID,
-                      self.sourceText.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
-                self.resultText = value
+                let value = try await service.translate(text: text, source: source, target: target)
+                self.finish(requestID: requestID, text: text, result: .success(value))
             } catch is CancellationError {
                 return
             } catch {
-                guard !Task.isCancelled,
-                      self.activeRequestID == requestID,
-                      self.sourceText.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
-                self.errorMessage = error.localizedDescription
+                self.finish(requestID: requestID, text: text, result: .failure(error))
             }
+        }
+    }
+
+    func translatePendingRequest(using session: TranslationSession) async {
+        guard let request = activeRequest else { return }
+        do {
+            let response = try await session.translate(request.text)
+            finish(requestID: request.id, text: request.text, result: .success(response.targetText))
+        } catch is CancellationError {
+            return
+        } catch {
+            finish(requestID: request.id, text: request.text, result: .failure(error))
         }
     }
 
@@ -101,6 +116,7 @@ final class TranslatorStore: ObservableObject {
         pendingTask?.cancel()
         pendingTask = nil
         cancelActiveTranslation()
+        translationConfiguration = nil
         sourceText = ""
         resultText = ""
         errorMessage = nil
@@ -110,6 +126,43 @@ final class TranslatorStore: ObservableObject {
         activeRequestID &+= 1
         translationTask?.cancel()
         translationTask = nil
+        activeRequest = nil
         isTranslating = false
     }
+
+    private func activateAppleTranslation(for request: TranslationRequest) {
+        let source = request.source.localeLanguage
+        let target = request.target.localeLanguage
+        if var configuration = translationConfiguration,
+           configuration.source == source,
+           configuration.target == target {
+            configuration.invalidate()
+            translationConfiguration = configuration
+        } else {
+            translationConfiguration = TranslationSession.Configuration(source: source, target: target)
+        }
+    }
+
+    private func finish(requestID: UInt64, text: String, result: Result<String, Error>) {
+        guard !Task.isCancelled,
+              activeRequestID == requestID,
+              sourceText.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
+        switch result {
+        case .success(let value):
+            resultText = value
+            errorMessage = nil
+        case .failure(let error):
+            errorMessage = error.localizedDescription
+        }
+        activeRequest = nil
+        translationTask = nil
+        isTranslating = false
+    }
+}
+
+private struct TranslationRequest {
+    let id: UInt64
+    let text: String
+    let source: Language
+    let target: Language
 }

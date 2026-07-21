@@ -1,0 +1,41 @@
+name: TranslateBar
+
+options:
+  bundleIdPrefix: com.iwbinb
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  TranslateBar:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Sources/TranslateBar
+      - path: AppStore/Assets.xcassets
+        buildPhase: resources
+      - path: AppStore/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: TranslateBar
+        PRODUCT_BUNDLE_IDENTIFIER: com.iwbinb.TranslateBar
+        INFOPLIST_FILE: AppStore/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: AppStore/TranslateBar.entitlements
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        COMBINE_HIDPI_IMAGES: YES
+        SWIFT_STRICT_CONCURRENCY: complete
+    scheme:
+      gatherCoverageData: false

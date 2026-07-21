@@ -3,3 +3,6 @@ dist/
 .swiftpm/
 .DS_Store
 *.xcuserstate
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint

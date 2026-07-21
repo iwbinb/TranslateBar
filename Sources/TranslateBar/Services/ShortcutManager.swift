@@ -61,6 +61,7 @@ struct Shortcut: Equatable {
     }
 }
 
+@MainActor
 final class ShortcutManager {
     var onShortcut: (() -> Void)?
     private var hotKeyRef: EventHotKeyRef?
@@ -80,7 +81,7 @@ final class ShortcutManager {
         let handlerStatus = InstallEventHandler(GetApplicationEventTarget(), { _, event, userData in
             guard GetEventKind(event) == UInt32(kEventHotKeyPressed), let userData else { return noErr }
             let manager = Unmanaged<ShortcutManager>.fromOpaque(userData).takeUnretainedValue()
-            DispatchQueue.main.async { manager.onShortcut?() }
+            Task { @MainActor in manager.onShortcut?() }
             return noErr
         }, 1, &eventType, context, &installedHandler)
         guard handlerStatus == noErr else {
@@ -104,10 +105,12 @@ final class ShortcutManager {
         return nil
     }
 
+    func stop() {
+        unregister()
+    }
+
     private func unregister() {
         if let hotKeyRef { UnregisterEventHotKey(hotKeyRef); self.hotKeyRef = nil }
         if let eventHandler { RemoveEventHandler(eventHandler); self.eventHandler = nil }
     }
-
-    deinit { unregister() }
 }

@@ -62,6 +62,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         clipboardMonitor.start()
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        clipboardMonitor.stop()
+        shortcutManager.stop()
+        speechInput.stop()
+    }
+
     @objc func togglePopover(_ sender: Any? = nil) {
         if popover.isShown { popover.performClose(sender) } else { showPopover() }
     }

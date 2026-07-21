@@ -5,6 +5,7 @@ protocol ServiceProviderDelegate: AnyObject {
     func translateSelectedText(_ text: String)
 }
 
+@MainActor
 final class ServiceProvider: NSObject {
     weak var delegate: ServiceProviderDelegate?
 
@@ -18,6 +19,6 @@ final class ServiceProvider: NSObject {
             error.pointee = "Could not find text to translate." as NSString
             return
         }
-        DispatchQueue.main.async { [weak self] in self?.delegate?.translateSelectedText(text) }
+        delegate?.translateSelectedText(text)
     }
 }

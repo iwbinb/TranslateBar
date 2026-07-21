@@ -21,20 +21,6 @@ final class TranslatorStoreTests: XCTestCase {
         XCTAssertEqual(calls.first?.target.code, "zh-CN")
     }
 
-    func testTranslateUsesChinaPreference() async throws {
-        let defaults = makeDefaults()
-        defaults.set(true, forKey: PreferencesKey.useChinaEndpoint)
-        let service = TranslationStub(responses: ["hello": .success("你好", delay: .zero)])
-        let store = makeStore(service: service, defaults: defaults)
-        store.sourceText = "hello"
-
-        store.translate()
-        await waitUntil { !store.isTranslating }
-
-        let calls = await service.calls
-        XCTAssertEqual(calls.first?.useChinaEndpoint, true)
-    }
-
     func testFailurePublishesReadableError() async throws {
         let service = TranslationStub(responses: ["hello": .failure(TestFailure.expected, delay: .zero)])
         let store = makeStore(service: service)
@@ -170,21 +156,12 @@ final class TranslatorStoreTests: XCTestCase {
 
     private func makeStore(
         service: TranslationStub,
-        defaults: UserDefaults? = nil,
         debounce: Duration = .milliseconds(5)
     ) -> TranslatorStore {
         TranslatorStore(
             service: service,
-            defaults: defaults ?? makeDefaults(),
             debounceDuration: debounce
         )
-    }
-
-    private func makeDefaults() -> UserDefaults {
-        let name = "TranslateBarTests.\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: name)!
-        defaults.removePersistentDomain(forName: name)
-        return defaults
     }
 
     private func waitUntil(
@@ -205,7 +182,6 @@ private actor TranslationStub: TranslationServing {
         let text: String
         let source: Language
         let target: Language
-        let useChinaEndpoint: Bool
     }
 
     enum Response: Sendable {
@@ -220,8 +196,8 @@ private actor TranslationStub: TranslationServing {
         self.responses = responses
     }
 
-    func translate(text: String, source: Language, target: Language, useChinaEndpoint: Bool) async throws -> String {
-        calls.append(Call(text: text, source: source, target: target, useChinaEndpoint: useChinaEndpoint))
+    func translate(text: String, source: Language, target: Language) async throws -> String {
+        calls.append(Call(text: text, source: source, target: target))
         guard let response = responses[text] else { throw TestFailure.missingResponse }
         switch response {
         case let .success(value, delay, ignoresCancellation):

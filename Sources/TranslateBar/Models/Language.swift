@@ -6,6 +6,11 @@ struct Language: Identifiable, Hashable, Codable, Sendable {
     var id: String { code }
 
     static let automatic = Language(code: "auto", name: "Detect language")
+
+    var localeLanguage: Locale.Language? {
+        code == Self.automatic.code ? nil : Locale.Language(identifier: code)
+    }
+
     static let all: [Language] = [
         automatic,
         Language(code: "en", name: "English"), Language(code: "zh-CN", name: "Chinese (Simplified)"),
@@ -25,7 +30,6 @@ enum PreferencesKey {
     static let launchAtLogin = "launchAtLogin"
     static let showInDock = "showInDock"
     static let translateClipboard = "translateClipboard"
-    static let useChinaEndpoint = "useChinaEndpoint"
     static let shortcutKeyCode = "shortcutKeyCode"
     static let shortcutModifiers = "shortcutModifiers"
 }

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+@preconcurrency import Translation
 
 struct TranslatorView: View {
     @ObservedObject var store: TranslatorStore
@@ -81,6 +82,9 @@ struct TranslatorView: View {
         .onChange(of: store.sourceText) { _, _ in store.scheduleTranslation() }
         .onChange(of: store.sourceLanguage) { _, _ in store.scheduleTranslation() }
         .onChange(of: store.targetLanguage) { _, _ in store.scheduleTranslation() }
+        .translationTask(store.translationConfiguration) { session in
+            await store.translatePendingRequest(using: session)
+        }
     }
 
     private func languagePicker(selection: Binding<Language>, allowsAutomatic: Bool) -> some View {
