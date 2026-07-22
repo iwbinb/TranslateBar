@@ -45,6 +45,13 @@ struct PreferencesView: View {
                         .frame(width: 140, height: 28)
                 }
             }
+            Section("About") {
+                Link("Privacy Policy", destination: URL(string: "https://translatebar.arenovo.com/privacy/")!)
+                Link("Support", destination: URL(string: "https://translatebar.arenovo.com/support/")!)
+                Text("TranslateBar 0.2.0")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .padding(18)

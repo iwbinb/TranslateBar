@@ -81,7 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func openPreferences() {
         NSApp.activate(ignoringOtherApps: true)
         if preferencesWindow == nil {
-            let content = NSHostingController(rootView: PreferencesView().frame(width: 480, height: 360))
+            let content = NSHostingController(rootView: PreferencesView().frame(width: 480, height: 450))
             let window = NSWindow(contentViewController: content)
             window.title = "TranslateBar Preferences"
             window.styleMask = [.titled, .closable]

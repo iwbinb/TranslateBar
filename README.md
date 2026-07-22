@@ -35,7 +35,7 @@ You can also open `TranslateBar.xcodeproj` in Xcode to run, archive, and distrib
 
 ## Privacy
 
-Translation is handled by macOS on the device. Clipboard text is processed only when automatic clipboard translation is enabled. Dictation requires microphone and speech recognition permissions and is configured for on-device recognition. TranslateBar does not include analytics, advertising, or third-party translation services. See [PRIVACY.md](PRIVACY.md).
+Translation is handled by macOS on the device. Clipboard text is processed only when automatic clipboard translation is enabled. Dictation requires microphone and speech recognition permissions and is configured for on-device recognition. TranslateBar does not include analytics, advertising, or third-party translation services. See [PRIVACY.md](PRIVACY.md) or the [public privacy policy](https://translatebar.arenovo.com/privacy/).
 
 ## License
 

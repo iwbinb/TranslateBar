@@ -33,6 +33,21 @@ final class TranslatorStoreTests: XCTestCase {
         XCTAssertEqual(store.resultText, "")
     }
 
+    func testLongTranslationResultIsPreservedWithoutTruncation() async throws {
+        let longResult = (1...80)
+            .map { "Translation paragraph \($0)" }
+            .joined(separator: "\n")
+        let service = TranslationStub(responses: ["long text": .success(longResult, delay: .zero)])
+        let store = makeStore(service: service)
+        store.sourceText = "long text"
+
+        store.translate()
+        await waitUntil { !store.isTranslating }
+
+        XCTAssertEqual(store.resultText, longResult)
+        XCTAssertEqual(store.resultText.split(separator: "\n").count, 80)
+    }
+
     func testLatestRequestWinsWhenOlderRequestIgnoresCancellation() async throws {
         let service = TranslationStub(responses: [
             "first": .success("旧结果", delay: .milliseconds(120), ignoresCancellation: true),

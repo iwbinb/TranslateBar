@@ -50,11 +50,16 @@ struct TranslatorView: View {
                             .padding(.top, 7)
                             .padding(.leading, 5)
                     }
-                    TextEditor(text: .constant(store.resultText))
-                        .font(.system(size: 15))
-                        .scrollContentBackground(.hidden)
-                        .disabled(true)
-                        .frame(minHeight: 96)
+                    ScrollView(.vertical) {
+                        Text(store.resultText)
+                            .font(.system(size: 15))
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 7)
+                    }
+                    .frame(height: 96)
+                    .accessibilityLabel("Translation result")
                 }
             }
             .padding(12)

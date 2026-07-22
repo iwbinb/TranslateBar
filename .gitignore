@@ -6,3 +6,8 @@ dist/
 xcuserdata/
 *.xccheckout
 *.xcscmblueprint
+.playwright-cli/
+.codex/
+docs/
+output/
+design-qa.md
