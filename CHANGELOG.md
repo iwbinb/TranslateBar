@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased - 2026-09-22
+
+- Made input and translation areas grow with their content up to a screen-aware limit, then scroll, so longer text is easier to read without an oversized popover.
+- Added layout coverage for independent growth, height limits, and shrinking after clearing text.
+
 ## 0.2.0 - 2026-07-22
 
 - Made long translation results scrollable and selectable so lengthy output remains accessible.

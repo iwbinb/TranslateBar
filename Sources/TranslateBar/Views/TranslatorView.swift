@@ -5,6 +5,7 @@ import SwiftUI
 struct TranslatorView: View {
     @ObservedObject var store: TranslatorStore
     @ObservedObject var speechInput: SpeechInputManager
+    @State private var maximumTextHeight: CGFloat = 260
 
     var body: some View {
         VStack(spacing: 0) {
@@ -58,7 +59,7 @@ struct TranslatorView: View {
                             .padding(.horizontal, 5)
                             .padding(.vertical, 7)
                     }
-                    .frame(height: 96)
+                    .modifier(GrowingTextHeight(text: store.resultText, maximumHeight: maximumTextHeight))
                     .accessibilityLabel("Translation result")
                 }
             }
@@ -84,6 +85,11 @@ struct TranslatorView: View {
             .padding(.vertical, 10)
         }
         .frame(width: 438)
+        .fixedSize(horizontal: false, vertical: true)
+        .onAppear(perform: updateMaximumTextHeight)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)) { _ in
+            updateMaximumTextHeight()
+        }
         .onChange(of: store.sourceText) { _, _ in store.scheduleTranslation() }
         .onChange(of: store.sourceLanguage) { _, _ in store.scheduleTranslation() }
         .onChange(of: store.targetLanguage) { _, _ in store.scheduleTranslation() }
@@ -120,7 +126,7 @@ struct TranslatorView: View {
             TextEditor(text: text)
                 .font(.system(size: 15))
                 .scrollContentBackground(.hidden)
-                .frame(minHeight: 96)
+                .modifier(GrowingTextHeight(text: text.wrappedValue, maximumHeight: maximumTextHeight))
             if let error = speechInput.errorMessage, title == "Original" {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
@@ -139,5 +145,39 @@ struct TranslatorView: View {
         } else {
             speechInput.start()
         }
+    }
+
+    private func updateMaximumTextHeight() {
+        let screen = AppDelegate.shared?.popoverScreen ?? NSScreen.main
+        // Reserve room for the controls, panel headings, and popover margins.
+        maximumTextHeight = min(260, max(120, ((screen?.visibleFrame.height ?? 820) - 300) / 2))
+    }
+}
+
+private struct GrowingTextHeight: ViewModifier {
+    let text: String
+    let maximumHeight: CGFloat
+    @State private var measuredHeight: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        content
+            .frame(height: min(maximumHeight, max(120, measuredHeight)))
+            .background(alignment: .topLeading) {
+                // Match the text area's font and insets. The final character also
+                // measures an empty last line while the user types a newline.
+                Text(verbatim: text + "\u{200B}")
+                    .font(.system(size: 15))
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 7)
+                    .onGeometryChange(for: CGFloat.self) { geometry in
+                        ceil(geometry.size.height)
+                    } action: { height in
+                        measuredHeight = height
+                    }
+                    .hidden()
+                    .accessibilityHidden(true)
+            }
     }
 }

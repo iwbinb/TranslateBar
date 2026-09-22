@@ -25,6 +25,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var popover: NSPopover!
     private var preferencesWindow: NSWindow?
 
+    var popoverScreen: NSScreen? { statusItem?.button?.window?.screen }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.shared = self
         NSApp.setActivationPolicy(UserDefaults.standard.bool(forKey: PreferencesKey.showInDock) ? .regular : .accessory)
@@ -40,10 +42,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover = NSPopover()
         popover.behavior = .transient
         popover.animates = true
-        popover.contentSize = NSSize(width: 438, height: 398)
-        popover.contentViewController = NSHostingController(
+        let hostingController = NSHostingController(
             rootView: TranslatorView(store: store, speechInput: speechInput)
         )
+        hostingController.sizingOptions = [.preferredContentSize]
+        popover.contentViewController = hostingController
 
         serviceProvider.delegate = self
         NSApp.servicesProvider = serviceProvider
