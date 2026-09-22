@@ -46,8 +46,8 @@ struct PreferencesView: View {
                 }
             }
             Section("About") {
-                Link("Privacy Policy", destination: URL(string: "https://translatebar.arenovo.com/privacy/")!)
-                Link("Support", destination: URL(string: "https://translatebar.arenovo.com/support/")!)
+                Link("Privacy Policy", destination: URL(string: "https://www.arenovo.com/projects/translatebar/privacy/")!)
+                Link("Support", destination: URL(string: "https://www.arenovo.com/projects/translatebar/support/")!)
                 Text("TranslateBar 0.2.0")
                     .font(.caption)
                     .foregroundStyle(.secondary)

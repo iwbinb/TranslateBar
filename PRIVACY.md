@@ -13,4 +13,4 @@ TranslateBar is designed to process translation content on your Mac.
 
 macOS may download language resources needed by its translation and speech technologies. Those system services are governed by the applicable system privacy terms and your device settings.
 
-For privacy questions, visit https://translatebar.arenovo.com/support/ or email hello@arenovo.com.
+For privacy questions, visit https://www.arenovo.com/projects/translatebar/support/ or email hello@arenovo.com.

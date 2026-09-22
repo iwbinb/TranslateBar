@@ -1,0 +1,10 @@
+# Deploy only after the new Arenovo pages are live.
+/ https://www.arenovo.com/projects/translatebar/ 301
+/index.html https://www.arenovo.com/projects/translatebar/ 301
+/privacy https://www.arenovo.com/projects/translatebar/privacy/ 301
+/privacy/ https://www.arenovo.com/projects/translatebar/privacy/ 301
+/privacy/index.html https://www.arenovo.com/projects/translatebar/privacy/ 301
+/support https://www.arenovo.com/projects/translatebar/support/ 301
+/support/ https://www.arenovo.com/projects/translatebar/support/ 301
+/support/index.html https://www.arenovo.com/projects/translatebar/support/ 301
+/* https://www.arenovo.com/projects/translatebar/:splat 301
