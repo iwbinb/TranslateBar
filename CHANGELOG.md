@@ -1,9 +1,9 @@
 # Changelog
 
-## Unreleased - 2026-09-22
+## 0.2.1 - 2026-09-22
 
+- Synchronized project settings, the About version, and verification checks to 0.2.1 (build 3) to match the build submitted for App Store review.
 - Moved website content to Arenovo, updated app and documentation links, and prepared legacy-domain redirects to simplify maintenance while preserving old links after migration.
-
 - Made input and translation areas grow with their content up to a screen-aware limit, then scroll, so longer text is easier to read without an oversized popover.
 - Added layout coverage for independent growth, height limits, and shrinking after clearing text.
 
